@@ -21,11 +21,10 @@
             color: #E91E63;
         }
 
-        /* Overlay to handle browser autoplay restrictions */
         #overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.9);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -73,14 +72,22 @@
             text-decoration: none; background-color: #FFA500; color: white;
             border-radius: 20px; border: 2px dashed #FF8C00;
         }
+
+        /* This hides the video element while letting the sound play */
+        #bgVideo { display: none; }
     </style>
 </head>
 <body>
 
     <div id="overlay">
         <h1>Welcome, Commander!</h1>
+        <p>Ready for the quiz?</p>
         <button onclick="startQuiz()">Start Quiz & Music</button>
     </div>
+
+    <video id="bgVideo" loop>
+        <source src="AQNlv9o-3Ss2qNFdafJtf-iSMz2cxvswctmzH2Kmom yzaEhrjLbdAs-13qjYFtNTBj6-nVW_gPYRRqoB5PtrjaiXAoyxTLEwaLc8i_YtHg.mp4" type="video/mp4">
+    </video>
 
     <div class="container">
         <h1>Quiz for My Commander!</h1>
@@ -95,18 +102,18 @@
 
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const bgVideo = document.getElementById('bgVideo');
         
-        // This function triggers on first click to bypass browser blocks
         function startQuiz() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             document.getElementById('overlay').style.display = 'none';
-            // You can trigger a "Welcome" sound or start your background loop here
-            playSynthSound('correct'); 
+            
+            // Start the hidden video music
+            bgVideo.play().catch(error => console.log("Playback failed:", error));
         }
 
         function playSynthSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
@@ -180,13 +187,13 @@
                 startWinAnimation(winAnimationDiv);
             } else {
                 playSynthSound('wrong');
-                // JOIN ALL ANSWERS: This shows all correct options separated by a slash
+                // Updated to show all correct answers
                 const allAnswers = currentQuestion.answers.join(" / ");
                 resultDiv.innerHTML = "Incorrect! <br> Possible answers: " + allAnswers + " 😞";
             }
 
             document.getElementById('answer').value = '';
-            setTimeout(displayQuestion, 4000); // Increased time so she can read all answers
+            setTimeout(displayQuestion, 4000);
         }
 
         function startWinAnimation(winAnimationDiv) {
