@@ -8,7 +8,6 @@
         body {
             font-family: 'Comic Sans MS', cursive;
             background-color: #fff9c4;
-            /* Updated to use relative path for GitHub */
             background-image: url('IMG1.png');
             background-size: cover;
             background-repeat: no-repeat;
@@ -20,6 +19,19 @@
             margin: 0;
             text-align: center;
             color: #E91E63;
+        }
+
+        /* Overlay to handle browser autoplay restrictions */
+        #overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
         }
 
         .container {
@@ -46,7 +58,7 @@
             cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        #result { font-size: 1.5em; margin-top: 20px; color: #FF8C00; min-height: 1.5em; }
+        #result { font-size: 1.2em; margin-top: 20px; color: #FF8C00; min-height: 1.5em; line-height: 1.4; }
 
         .win-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         .emoji { position: absolute; font-size: 2em; animation: confetti 1s ease-out forwards; }
@@ -64,9 +76,15 @@
     </style>
 </head>
 <body>
+
+    <div id="overlay">
+        <h1>Welcome, Commander!</h1>
+        <button onclick="startQuiz()">Start Quiz & Music</button>
+    </div>
+
     <div class="container">
         <h1>Quiz for My Commander!</h1>
-        <p>Answer in ALL CAPS. (Click anywhere first to enable sound!)</p>
+        <p>Answer in ALL CAPS.</p>
         <div id="question"></div>
         <input type="text" id="answer" placeholder="Your Answer">
         <button onclick="checkAnswer()">Submit</button>
@@ -76,8 +94,15 @@
     <div class="win-animation" id="winAnimation"></div>
 
     <script>
-        // --- BUILT-IN SOUND SYNTHESIZER (No MP3 files needed) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // This function triggers on first click to bypass browser blocks
+        function startQuiz() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            document.getElementById('overlay').style.display = 'none';
+            // You can trigger a "Welcome" sound or start your background loop here
+            playSynthSound('correct'); 
+        }
 
         function playSynthSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -133,6 +158,7 @@
         function displayQuestion() {
             currentQuestion = questions[Math.floor(Math.random() * questions.length)];
             document.getElementById('question').textContent = currentQuestion.question;
+            document.getElementById('result').textContent = '';
         }
 
         function checkAnswer() {
@@ -154,11 +180,13 @@
                 startWinAnimation(winAnimationDiv);
             } else {
                 playSynthSound('wrong');
-                resultDiv.textContent = "Incorrect! Answer was: " + currentQuestion.answers[0] + ". 😞";
+                // JOIN ALL ANSWERS: This shows all correct options separated by a slash
+                const allAnswers = currentQuestion.answers.join(" / ");
+                resultDiv.innerHTML = "Incorrect! <br> Possible answers: " + allAnswers + " 😞";
             }
 
             document.getElementById('answer').value = '';
-            setTimeout(displayQuestion, 2000);
+            setTimeout(displayQuestion, 4000); // Increased time so she can read all answers
         }
 
         function startWinAnimation(winAnimationDiv) {
