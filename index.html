@@ -73,7 +73,7 @@
             border-radius: 20px; border: 2px dashed #FF8C00;
         }
 
-        /* This hides the video element while letting the sound play */
+        /* Keep video hidden */
         #bgVideo { display: none; }
     </style>
 </head>
@@ -108,8 +108,10 @@
             if (audioCtx.state === 'suspended') audioCtx.resume();
             document.getElementById('overlay').style.display = 'none';
             
-            // Start the hidden video music
-            bgVideo.play().catch(error => console.log("Playback failed:", error));
+            // Try to play and catch errors
+            bgVideo.play().catch(error => {
+                alert("Music Error: Make sure the video file name is exactly the same as in GitHub! " + error);
+            });
         }
 
         function playSynthSound(type) {
@@ -187,7 +189,6 @@
                 startWinAnimation(winAnimationDiv);
             } else {
                 playSynthSound('wrong');
-                // Updated to show all correct answers
                 const allAnswers = currentQuestion.answers.join(" / ");
                 resultDiv.innerHTML = "Incorrect! <br> Possible answers: " + allAnswers + " 😞";
             }
