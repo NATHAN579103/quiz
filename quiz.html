@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz for My Commander!</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive;
+            background-color: #fff9c4;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+            color: #E91E63;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 224, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 800px;
+        }
+
+        h1 { font-size: 2.5em; margin-bottom: 20px; color: #FF8C00; }
+        #question { font-size: 1.8em; margin-bottom: 30px; }
+
+        input[type="text"] {
+            padding: 15px; font-size: 1.2em; border-radius: 8px;
+            border: 2px solid #FFA500; width: 70%; margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        button {
+            padding: 15px 30px; font-size: 1.2em; border: none;
+            background-color: #FFD700; color: white; border-radius: 8px;
+            cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        #result { font-size: 1.5em; margin-top: 20px; color: #FF8C00; min-height: 1.5em; }
+
+        .win-animation { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .emoji { position: absolute; font-size: 2em; animation: confetti 1s ease-out forwards; }
+        @keyframes confetti {
+            0% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(0deg); }
+            10% { opacity: 1; }
+            100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(720deg); }
+        }
+
+        a {
+            display: inline-block; margin-top: 20px; padding: 10px 20px;
+            text-decoration: none; background-color: #FFA500; color: white;
+            border-radius: 20px; border: 2px dashed #FF8C00;
+        }
+    </style>
+</head>
+<body background="C:\Users\Mark Nathan\Downloads\IMG1.png">
+    <div class="container">
+        <h1>Quiz for My Commander!</h1>
+        <p>Answer in ALL CAPS. (Click anywhere first to enable sound!)</p>
+        <div id="question"></div>
+        <input type="text" id="answer" placeholder="Your Answer">
+        <button onclick="checkAnswer()">Submit</button>
+        <div id="result"></div>
+        <a href="homepage.html">💖 Back to Home 💖</a>
+    </div>
+    <div class="win-animation" id="winAnimation"></div>
+
+    <script>
+        // --- BUILT-IN SOUND SYNTHESIZER (No MP3 files needed) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSynthSound(type) {
+            // Resume context if browser suspended it
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'correct') {
+                // Happy "Ding-Ding"
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+                gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } 
+            else if (type === 'wrong') {
+                // Sad "Bwahhh"
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+                osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.4); // A2
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            }
+            else if (type === 'click') {
+                // Short "Tick"
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
+        const questions = [
+            { question: "What is my favorite song?", answers: ["ISA LANG"] },
+            { question: "What is one of my favorite colors?", answers: ["GREEN", "PINK", "BLACK", "VIOLET"] },
+            { question: "What is my comfort movie?", answers: ["BRIDGE TO TERABITHIA"] },
+            { question: "Name one of my favorite KDramas.", answers: ["WHEN LIFE GIVES YOU TANGERINES", "BAD AND CRAZY", "KINGDOM", "ALCHEMY OF SOULS", "DESCENDANTS OF THE SUN"] },
+            { question: "Name one of my favorite eSports games.", answers: ["CALL OF DUTY MOBILE", "MOBILE LEGEND BANG BANG", "VALORANT"] },
+            { question: "What is my favorite fruit?", answers: ["RAMBUTAN"] },
+            { question: "Name one of my dream jobs.", answers: ["TEACHER", "DOCTOR", "LAWYER", "THERAPIST"] },
+            { question: "Name one of my favorite anime.", answers: ["MONSTER", "ATTACK ON TITAN", "VINLAND SAGA"] },
+            { question: "Name one of my favorite movies.", answers: ["WEATHERING WITH YOU", "YOUR NAME", "HOW TO MAKE MILLIONS BEFORE GRANDMA DIES"] }
+        ];
+
+        let currentQuestion = null;
+
+        function displayQuestion() {
+            currentQuestion = questions[Math.floor(Math.random() * questions.length)];
+            document.getElementById('question').textContent = currentQuestion.question;
+        }
+
+        function checkAnswer() {
+            playSynthSound('click');
+            const userAnswer = document.getElementById('answer').value.toUpperCase().trim();
+            const resultDiv = document.getElementById('result');
+            const winAnimationDiv = document.getElementById('winAnimation');
+            let isCorrect = false;
+
+            if (!userAnswer) return;
+
+            for (let ans of currentQuestion.answers) {
+                if (userAnswer === ans) { isCorrect = true; break; }
+            }
+
+            if (isCorrect) {
+                playSynthSound('correct');
+                resultDiv.textContent = "Correct, Commander! 🎉";
+                startWinAnimation(winAnimationDiv);
+            } else {
+                playSynthSound('wrong');
+                resultDiv.textContent = "Incorrect! Answer was: " + currentQuestion.answers[0] + ". 😞";
+            }
+
+            document.getElementById('answer').value = '';
+            setTimeout(displayQuestion, 2000);
+        }
+
+        function startWinAnimation(winAnimationDiv) {
+            winAnimationDiv.innerHTML = '';
+            for (let i = 0; i < 30; i++) {
+                const emoji = document.createElement('div');
+                emoji.classList.add('emoji');
+                emoji.textContent = "💖";
+                emoji.style.setProperty('--x', Math.random() * 100 + 'vw');
+                emoji.style.setProperty('--y', Math.random() * 100 + 'vh');
+                winAnimationDiv.appendChild(emoji);
+            }
+            setTimeout(() => { winAnimationDiv.innerHTML = ''; }, 3000);
+        }
+
+        displayQuestion();
+    </script>
+</body>
+</html>
