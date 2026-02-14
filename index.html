@@ -8,6 +8,8 @@
         body {
             font-family: 'Comic Sans MS', cursive;
             background-color: #fff9c4;
+            /* Updated to use relative path for GitHub */
+            background-image: url('IMG1.png');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center center;
@@ -61,7 +63,7 @@
         }
     </style>
 </head>
-<body background="C:\Users\Mark Nathan\Downloads\IMG1.png">
+<body>
     <div class="container">
         <h1>Quiz for My Commander!</h1>
         <p>Answer in ALL CAPS. (Click anywhere first to enable sound!)</p>
@@ -69,7 +71,7 @@
         <input type="text" id="answer" placeholder="Your Answer">
         <button onclick="checkAnswer()">Submit</button>
         <div id="result"></div>
-        <a href="homepage.html">💖 Back to Home 💖</a>
+        <a href="index.html">💖 Back to Home 💖</a>
     </div>
     <div class="win-animation" id="winAnimation"></div>
 
@@ -78,7 +80,6 @@
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playSynthSound(type) {
-            // Resume context if browser suspended it
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
             const osc = audioCtx.createOscillator();
@@ -87,10 +88,9 @@
             gain.connect(audioCtx.destination);
 
             if (type === 'correct') {
-                // Happy "Ding-Ding"
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1); 
                 gain.gain.setValueAtTime(0, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05);
                 gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
@@ -98,17 +98,15 @@
                 osc.stop(audioCtx.currentTime + 0.3);
             } 
             else if (type === 'wrong') {
-                // Sad "Bwahhh"
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
-                osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.4); // A2
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.4); 
                 gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.5);
             }
             else if (type === 'click') {
-                // Short "Tick"
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
                 gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
